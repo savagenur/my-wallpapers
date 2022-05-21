@@ -12,10 +12,12 @@ import 'package:permission_handler/permission_handler.dart';
 class ImageView extends StatefulWidget {
   final String imgUrl;
   final List favorites;
+  final List favImgUrls;
   const ImageView({
     Key? key,
     required this.imgUrl,
     required this.favorites,
+    required this.favImgUrls,
   }) : super(key: key);
 
   @override
@@ -95,11 +97,34 @@ class _ImageViewState extends State<ImageView> {
           Positioned(
               bottom: 30,
               right: 30,
-              child: IconButton(
-                onPressed: () async {
-                  await addToFavorites(widget.imgUrl);
+              child: GestureDetector(
+                onTap: () async {
+                  await Phoenix.rebirth(context);
+                  setState(() {
+                    if (widget.favorites
+                        .map((e) => e.imgUrl)
+                        .toList()
+                        .contains(widget.imgUrl)) {
+                      widget.favImgUrls.remove(widget.imgUrl);
+                      deleteFavoriteWallpaper(widget
+                          .favorites[widget.favorites
+                              .map((e) => e.imgUrl)
+                              .toList()
+                              .indexOf(widget.imgUrl)]
+                          .id
+                          .toString());
+                    } else if (widget.favorites.isEmpty ||
+                        widget.favorites.map((e) => e.imgUrl) !=
+                            widget.imgUrl) {
+                      widget.favImgUrls.add(widget.imgUrl);
+
+                      addFavoriteWallpaper(imgUrl: widget.imgUrl)
+                          .then((value) {});
+                    }
+                   
+                  });
                 },
-                icon: widget.favorites.contains(widget.imgUrl)
+                child: widget.favImgUrls.contains(widget.imgUrl)
                     ? Icon(
                         Icons.favorite,
                         color: Colors.red,

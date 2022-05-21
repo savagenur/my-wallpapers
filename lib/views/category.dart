@@ -1,18 +1,32 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:my_wallpapers/authentification/constants.dart';
 import 'package:my_wallpapers/data/data.dart';
 import 'package:my_wallpapers/model/wallpaper_model.dart';
+import 'package:my_wallpapers/pages/favorites_list.dart';
+import 'package:my_wallpapers/utils/utils.dart';
 import 'package:my_wallpapers/views/home.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../widgets/wallpapers_list.dart';
 import '../widgets/widget.dart';
 
 class Category extends StatefulWidget {
+  final GlobalKey _key = GlobalKey();
   final String categoryName;
-  const Category({Key? key, required this.categoryName}) : super(key: key);
+  final List favImg;
+  final List<FavoriteModel> favorites;
+  Category(
+      {Key? key,
+      required this.categoryName,
+      required this.favImg,
+      required this.favorites})
+      : super(key: key);
 
   @override
   State<Category> createState() => _CategoryState();
@@ -20,7 +34,7 @@ class Category extends StatefulWidget {
 
 class _CategoryState extends State<Category> {
   List<WallpaperModel> wallpapers = [];
-  int page = 1;
+  int page = Utils.randomNumber;
   getCategoryWallpapers(String query) async {
     var response = await http.get(
         Uri.parse(
@@ -34,6 +48,25 @@ class _CategoryState extends State<Category> {
 
       setState(() {});
     });
+  }
+
+  RefreshController refreshController =
+      RefreshController(initialRefresh: false);
+
+  Future refreshPage() async {
+    setState(() {
+      wallpapers = [];
+      page = Random().nextInt(100);
+    });
+    await getCategoryWallpapers(widget.categoryName);
+
+    setState(() {});
+    refreshController.refreshCompleted();
+  }
+
+  Future onLoad() async {
+    await Future.delayed(Duration(milliseconds: 1000));
+    refreshController.loadComplete();
   }
 
   @override
@@ -66,30 +99,61 @@ class _CategoryState extends State<Category> {
         title: BrandName(),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 16,
+      body: StreamBuilder<List<FavoriteModel>>(
+        stream: readFavorites(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            final favorites = snapshot.data!;
+
+            List favoriteListUrl = favorites.map((e) => e.imgUrl).toList();
+
+            return SmartRefresher(
+              header: WaterDropMaterialHeader(
+                color: kPrimaryColor,
               ),
-              WallpapersList(
-                favorites: [],
-                wallpapers: wallpapers,
-              ),
-              wallpapers.isNotEmpty
-                  ? TextButton(
-                      style: TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(80)),
+              controller: refreshController,
+              onLoading: onLoad,
+              onRefresh: refreshPage,
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                child: Container(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 16,
                       ),
-                      onPressed: seeMore,
-                      child: Lottie.asset("assets/animated/see-more.json",
-                          height: 100))
-                  : Container()
-            ],
-          ),
-        ),
+                      WallpapersList(
+                        favorites: favorites,
+                        favImgUrls: favoriteListUrl,
+                        wallpapers: wallpapers,
+                      ),
+                      wallpapers.isNotEmpty
+                          ? TextButton(
+                              style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(80)),
+                              ),
+                              onPressed: () {
+                                seeMore;
+                                setState(() {});
+                              },
+                              child: Lottie.asset(
+                                  "assets/animated/see-more.json",
+                                  height: 100))
+                          : Container()
+                    ],
+                  ),
+                ),
+              ),
+            );
+          } else {
+            return Center(
+                child: CircularProgressIndicator(
+              color: kPrimaryColor,
+            ));
+          }
+        },
       ),
     );
   }

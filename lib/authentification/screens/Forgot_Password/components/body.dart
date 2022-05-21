@@ -42,6 +42,7 @@ class _BodyState extends State<Body> {
     Size size = MediaQuery.of(context).size;
     return Background(
         child: SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       child: Form(
         key: formKey,
         child: Column(
@@ -95,7 +96,9 @@ class _BodyState extends State<Body> {
         context: context,
         builder: (context) {
           return Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: kPrimaryColor,
+            ),
           );
         });
     try {

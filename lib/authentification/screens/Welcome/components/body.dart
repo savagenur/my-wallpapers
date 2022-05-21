@@ -15,27 +15,20 @@ class Body extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Background(
       child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            RichText(text: TextSpan(
-             
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87
-
-              ),
-              children: [
-                TextSpan(
-                  text: "WELCOME TO "
-                ),TextSpan(
-                  text: "MY",style: TextStyle(color: kPrimaryColor)
-                ),TextSpan(
-                  text: "WALLPAPERS "
-                ),
-              ]
-            )),
+            RichText(
+                text: TextSpan(
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black87),
+                    children: [
+                  TextSpan(text: "WELCOME TO "),
+                  TextSpan(text: "MY", style: TextStyle(color: kPrimaryColor)),
+                  TextSpan(text: "WALLPAPERS "),
+                ])),
             SizedBox(
               height: 15,
             ),

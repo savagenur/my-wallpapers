@@ -45,6 +45,7 @@ class _BodyState extends State<Body> {
         child: Form(
       key: formKey,
       child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -129,7 +130,9 @@ class _BodyState extends State<Body> {
         context: context,
         builder: (context) {
           return Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: kPrimaryColor,
+            ),
           );
         });
     try {

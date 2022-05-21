@@ -18,12 +18,23 @@ Future addFavoriteWallpaper({required String imgUrl}) async {
   await docFavorite.set(json);
 }
 
+Future deleteFavoriteWallpaper(String id) async {
+  final docFavorite = FirebaseFirestore.instance
+      .collection("users")
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .collection("favorites")
+      .doc(id);
+  await docFavorite.delete();
+}
+
+    
+
 class FavoriteModel {
   String? id;
   String? imgUrl;
   DateTime? created;
   FavoriteModel({
-    this.id ,
+    this.id,
     this.imgUrl,
     this.created,
   });
@@ -46,3 +57,24 @@ Stream<List<FavoriteModel>> readFavorites() => FirebaseFirestore.instance
     .map((snapshot) => snapshot.docs
         .map((doc) => FavoriteModel.fromJson(doc.data()))
         .toList());
+
+
+// class AccountModel {
+//   String? email;
+//   String? imgUrl;
+//   DateTime? created;
+//   AccountModel({
+//     this.id,
+//     this.imgUrl,
+//     this.created,
+//   });
+
+//   Map<String, dynamic> toJson() =>
+//       {'id': id, 'imgUrl': imgUrl, 'created': created};
+
+//   AccountModel.fromJson(Map<String, dynamic> json) {
+//     id = json['id'];
+//     created = (json['created'] as Timestamp).toDate();
+//     imgUrl = json['imgUrl'];
+//   }
+// }

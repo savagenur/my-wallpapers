@@ -49,7 +49,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     if (isEmailVerified) timer?.cancel();
   }
 
-
   Future sendVerificationEmail() async {
     try {
       final user = FirebaseAuth.instance.currentUser!;
@@ -72,10 +71,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     return isEmailVerified
         ? const Home()
         : Scaffold(
-
             backgroundColor: Colors.white,
             appBar: AppBar(
-
               leading: Builder(
                 builder: (BuildContext context) {
                   return IconButton(
@@ -84,7 +81,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                       color: Color(0xff4B4453),
                     ),
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>WelcomeScreen()));
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => WelcomeScreen()));
                     },
                   );
                 },
@@ -95,9 +93,11 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               elevation: 0,
             ),
             body: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Container(
                 child: Padding(
-                  padding:  EdgeInsets.only(top: MediaQuery.of(context).size.height/10),
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).size.height / 10),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -110,17 +110,19 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                         textAlign: TextAlign.center,
                       ),
                       Container(
-                          child:
-                              Lottie.asset("assets/animated/verification.json")),
+                          child: Lottie.asset(
+                              "assets/animated/verification.json")),
                       Container(
                         margin: EdgeInsets.symmetric(horizontal: 20),
                         child: ElevatedButton.icon(
                             style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all<Color>(
-                                    kPrimaryColor),
+                                backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        kPrimaryColor),
                                 minimumSize: MaterialStateProperty.all<Size>(
                                     Size.fromHeight(50))),
-                            onPressed: canResendEmail ? sendVerificationEmail : null,
+                            onPressed:
+                                canResendEmail ? sendVerificationEmail : null,
                             icon: Icon(Icons.email_outlined),
                             label: Text("Resend Verify Email")),
                       )

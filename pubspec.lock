@@ -36,6 +36,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.8.2"
+  bn_refresh_indicator:
+    dependency: "direct main"
+    description:
+      name: bn_refresh_indicator
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.4.5"
   boolean_selector:
     dependency: transitive
     description:
@@ -527,6 +534,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.2.4"
+  pull_to_refresh:
+    dependency: "direct main"
+    description:
+      name: pull_to_refresh
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   random_string:
     dependency: "direct main"
     description:

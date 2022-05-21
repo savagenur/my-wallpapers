@@ -6,12 +6,15 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:my_wallpapers/authentification/constants.dart';
 import 'package:my_wallpapers/authentification/screens/Welcome/welcome_screen.dart';
+import 'package:my_wallpapers/views/account_page.dart';
 import 'package:my_wallpapers/views/favorites_page.dart';
 import 'package:my_wallpapers/views/home.dart';
 
 class BrandName extends StatefulWidget {
   final bool favorite;
-  const BrandName({Key? key, this.favorite=false}) : super(key: key);
+  final bool account;
+  const BrandName({Key? key, this.favorite = false, this.account = false})
+      : super(key: key);
 
   @override
   State<BrandName> createState() => _BrandNameState();
@@ -54,33 +57,82 @@ class _BrandNameState extends State<BrandName> {
                           style: TextStyle(
                             color: kPrimaryColor,
                           )),
-                     widget.favorite?TextSpan(
-                          text: "Favorites",
-                          style: TextStyle(
-                            color: Color(0xff4B4453),
-                          )): TextSpan(
-                          text: "Wallpapers",
-                          style: TextStyle(
-                            color: Color(0xff4B4453),
-                          )),
+                      widget.favorite
+                          ? TextSpan(
+                              text: "Favorites",
+                              style: TextStyle(
+                                color: Color(0xff4B4453),
+                              ))
+                          : widget.account
+                              ? TextSpan(
+                                  text: "Account",
+                                  style: TextStyle(
+                                    color: Color(0xff4B4453),
+                                  ))
+                              : TextSpan(
+                                  text: "Wallpapers",
+                                  style: TextStyle(
+                                    color: Color(0xff4B4453),
+                                  )),
                     ])),
-               widget.favorite? Padding(
-                 padding: EdgeInsets.only(top: 8),
-                 child: Lottie.asset("assets/animated/favorite-location.json", height: 80),
-               ):Container()
+                widget.favorite
+                    ? Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: Lottie.asset(
+                            "assets/animated/favorite-location.json",
+                            height: 60),
+                      )
+                    :widget.account?Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: Lottie.asset(
+                            "assets/animated/avatar.json",
+                            height: 60),
+                      ): Container()
               ],
             ),
           ),
           PopupMenuButton<int>(
               icon: Lottie.asset("assets/animated/menu.json"),
               itemBuilder: (context) {
-                return [
-                  PopupMenuItem(
+                return [PopupMenuItem(
                       value: 0,
+                      onTap: () async {
+                        await Phoenix.rebirth(context);
+
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => Home()));
+                      },
                       child: Row(
                         children: [
-                          Lottie.asset("assets/animated/avatar.json",
-                              height: 70),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 15),
+                            child: Lottie.asset("assets/animated/home.json",
+                                height: 40),
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            "Home Page",
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      )),
+                  PopupMenuItem(
+                      value: 1,
+                      onTap: () async {
+                        await Phoenix.rebirth(context);
+
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => AccountPage()));
+                      },
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 15),
+                            child: Lottie.asset("assets/animated/avatar.json",
+                                height: 70),
+                          ),
                           SizedBox(
                             width: 8,
                           ),
@@ -91,7 +143,7 @@ class _BrandNameState extends State<BrandName> {
                         ],
                       )),
                   PopupMenuItem(
-                      value: 1,
+                      value: 2,
                       onTap: () async {
                         await Phoenix.rebirth(context);
 
@@ -138,7 +190,7 @@ class _BrandNameState extends State<BrandName> {
                         ),
                       ],
                     ),
-                    value: 2,
+                    value: 3,
                   ),
                 ];
               }),

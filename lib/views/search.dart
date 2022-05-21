@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:my_wallpapers/pages/favorites_list.dart';
+import 'package:my_wallpapers/utils/utils.dart';
 import 'package:my_wallpapers/widgets/prev_and_next.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../authentification/constants.dart';
 
 import 'package:my_wallpapers/data/data.dart';
@@ -15,8 +19,15 @@ import 'package:my_wallpapers/widgets/wallpapers_list.dart';
 import '../widgets/widget.dart';
 
 class Search extends StatefulWidget {
+  final List<FavoriteModel> favorites;
+  final List favImgUrls;
   final String searchQuery;
-  const Search({Key? key, required this.searchQuery}) : super(key: key);
+  const Search(
+      {Key? key,
+      required this.searchQuery,
+      required this.favorites,
+      required this.favImgUrls})
+      : super(key: key);
 
   @override
   State<Search> createState() => _SearchState();
@@ -26,11 +37,11 @@ class _SearchState extends State<Search> {
   GlobalKey<FormState> _formKey = GlobalKey();
   List<WallpaperModel> wallpapers = [];
   TextEditingController searchController = TextEditingController();
-  int page = 1;
+  int page = Utils.randomNumber;
   getSearchWallpapers(String query) async {
     var response = await http.get(
         Uri.parse(
-            "https://api.pexels.com/v1/search?query=$query&per_page=16&page=1"),
+            "https://api.pexels.com/v1/search?query=$query&per_page=16&page=$page"),
         headers: {"Authorization": apiKey});
 
     Map<String, dynamic> jsonData = jsonDecode(response.body);
@@ -42,9 +53,11 @@ class _SearchState extends State<Search> {
 
     setState(() {});
   }
+
   getMore() async {
     var response = await http.get(
-        Uri.parse("https://api.pexels.com/v1/search?query=${searchController.text}&per_page=16&page=$page"),
+        Uri.parse(
+            "https://api.pexels.com/v1/search?query=${searchController.text}&per_page=16&page=$page"),
         headers: {"Authorization": apiKey});
 
     Map<String, dynamic> jsonData = jsonDecode(response.body);
@@ -62,6 +75,25 @@ class _SearchState extends State<Search> {
     getSearchWallpapers(widget.searchQuery);
     searchController.text = widget.searchQuery;
     super.initState();
+  }
+
+  RefreshController refreshController =
+      RefreshController(initialRefresh: false);
+
+  Future refreshPage() async {
+    setState(() {
+      wallpapers = [];
+      page = Random().nextInt(100);
+    });
+    await getSearchWallpapers(widget.searchQuery);
+
+    setState(() {});
+    refreshController.refreshCompleted();
+  }
+
+  Future onLoad() async {
+    await Future.delayed(Duration(milliseconds: 1000));
+    refreshController.loadComplete();
   }
 
   @override
@@ -92,113 +124,165 @@ class _SearchState extends State<Search> {
           title: BrandName(),
           elevation: 0,
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 5,
-                ),
-                Form(
-                  key: _formKey,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 24),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: kPrimaryLightColor),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            textInputAction: TextInputAction.search,
-                            onFieldSubmitted: (value) {
-                              if (!_formKey.currentState!.validate()) {
-                                return;
-                              }
-                              FocusScope.of(context).unfocus();
+        body: StreamBuilder(
+          stream: readFavorites(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.hasData) {
+              final favorites = snapshot.data!;
 
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => Search(
-                                        searchQuery: searchController.text,
-                                      )));
-                            },
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "This field may not be empty!";
-                              } else {
-                                return null;
-                              }
-                            },
-                            controller: searchController,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                  left: 20, bottom: 10, top: 15),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: kPrimaryColor),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              border: InputBorder.none,
-                              hintText: "Search wallpaper",
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    if (!_formKey.currentState!.validate()) {
-                                      return;
-                                    }
-                                    FocusScope.of(context).unfocus();
-                                    setState(() {
-                                      wallpapers = [];
-                                      getSearchWallpapers(
-                                          searchController.text);
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) => Search(
-                                                  searchQuery:
-                                                      searchController.text)));
-                                    });
+              List favoriteListUrl = favorites.map((e) => e.imgUrl).toList();
+              return Container(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Form(
+                      key: _formKey,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 24),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: kPrimaryLightColor),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                textInputAction: TextInputAction.search,
+                                onFieldSubmitted: (value) {
+                                  if (!_formKey.currentState!.validate()) {
+                                    return;
+                                  }
+                                  FocusScope.of(context).unfocus();
 
-                                    // FocusScope.of(context).requestFocus( _focusNode);
-                                  },
-                                  child: Lottie.asset("assets/animated/search2.json", height: 20),
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => Search(
+                                            favImgUrls: favoriteListUrl,
+                                            favorites: favorites,
+                                            searchQuery: searchController.text,
+                                          )));
+                                },
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return "This field may not be empty!";
+                                  } else {
+                                    return null;
+                                  }
+                                },
+                                controller: searchController,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.only(
+                                      left: 20, bottom: 10, top: 15),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kPrimaryColor),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  border: InputBorder.none,
+                                  hintText: "Search wallpaper",
+                                  suffixIcon: Padding(
+                                    padding: const EdgeInsets.only(right: 15),
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        if (!_formKey.currentState!
+                                            .validate()) {
+                                          return;
+                                        }
+                                        FocusScope.of(context).unfocus();
+                                        setState(() {
+                                          wallpapers = [];
+                                          getSearchWallpapers(
+                                              searchController.text);
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) => Search(
+                                                      favImgUrls:
+                                                          favoriteListUrl,
+                                                      favorites: favorites,
+                                                      searchQuery:
+                                                          searchController
+                                                              .text)));
+                                        });
+
+                                        // FocusScope.of(context).requestFocus( _focusNode);
+                                      },
+                                      child: Lottie.asset(
+                                          "assets/animated/search2.json",
+                                          height: 20),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Expanded(
+                        child: GestureDetector(
+                      onPanDown: (_) {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                      },
+                      child: SmartRefresher(
+                        header: WaterDropMaterialHeader(
+                          color: kPrimaryColor,
+                        ),
+                        controller: refreshController,
+                        onLoading: onLoad,
+                        onRefresh: refreshPage,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: 5,
+                              ),
+                              WallpapersList(
+                                favImgUrls: favoriteListUrl,
+                                favorites: favorites,
+                                wallpapers: wallpapers,
+                              ),
+                              // PrevAndNext(
+                              //   page: page,
+                              //   next: nextPage,
+                              //   prev: prevPage,
+                              // )
+                              wallpapers.isNotEmpty
+                                  ? TextButton(
+                                      style: TextButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(80)),
+                                      ),
+                                      onPressed: seeMore,
+                                      child: Lottie.asset(
+                                          "assets/animated/see-more.json",
+                                          height: 100))
+                                  : Container()
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    ))
+                  ],
                 ),
-                SizedBox(
-                  height: 16,
-                ),
-                WallpapersList(
-                  favorites: [],
-                  wallpapers: wallpapers,
-                ),
-                // PrevAndNext(
-                //   page: page,
-                //   next: nextPage,
-                //   prev: prevPage,
-                // )
-               wallpapers.isNotEmpty? TextButton(
-                style: TextButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80)),),
-                onPressed: seeMore,
-                child: Lottie.asset("assets/animated/see-more.json", height: 100)):Container()
-              ],
-            ),
-          ),
+              );
+            } else {
+              return Container();
+            }
+          },
         ),
       ),
     );
   }
-Future seeMore() async{
+
+  Future seeMore() async {
     setState(() {
       page++;
     });
     await getMore();
-    
   }
 
   Future nextPage() async {
@@ -209,9 +293,12 @@ Future seeMore() async{
     setState(() {
       page++;
       print(page);
-    getSearchWallpapers(searchController.text);
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => Search(searchQuery: searchController.text)));
+      getSearchWallpapers(searchController.text);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => Search(
+              favImgUrls: widget.favImgUrls,
+              favorites: widget.favorites,
+              searchQuery: searchController.text)));
     });
   }
 
@@ -225,7 +312,10 @@ Future seeMore() async{
       page--;
       getSearchWallpapers(searchController.text);
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => Search(searchQuery: searchController.text)));
+          builder: (context) => Search(
+              favImgUrls: widget.favImgUrls,
+              favorites: widget.favorites,
+              searchQuery: searchController.text)));
     });
   }
 }

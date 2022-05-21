@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:my_wallpapers/authentification/constants.dart';
 import 'package:my_wallpapers/authentification/screens/Welcome/welcome_screen.dart';
 import 'package:my_wallpapers/pages/verify_email_page.dart';
 import 'package:my_wallpapers/views/home.dart';
@@ -17,7 +18,9 @@ class MainPage extends StatelessWidget {
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: kPrimaryColor,
+              ),
             );
           } else if (snapshot.hasError) {
             return Center(
