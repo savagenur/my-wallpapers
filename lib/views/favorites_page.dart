@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:my_wallpapers/authentification/constants.dart';
+import 'package:my_wallpapers/pages/no_favorites.dart';
 import 'package:my_wallpapers/views/home.dart';
 import 'package:my_wallpapers/views/image_view.dart';
 
@@ -52,7 +54,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Container(
-                child: Column(
+                margin: EdgeInsets.symmetric(horizontal: 15),
+                child:favoriteListUrl.isEmpty?
+                NoFavorites()
+                : Column(
                   children: [
                     SizedBox(
                       height: 16,
