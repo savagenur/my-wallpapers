@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:my_wallpapers/authentification/screens/Welcome/welcome_screen.dart';
 import 'package:my_wallpapers/utils/utils.dart';
 import 'package:my_wallpapers/views/home.dart';
+import 'package:my_wallpapers/widgets/brand_name_verify_page.dart';
 
 import '../authentification/constants.dart';
 import '../widgets/widget.dart';
@@ -21,11 +24,19 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   bool isEmailVerified = false;
   bool canResendEmail = false;
   Timer? timer;
+ bool hasInternet = false;
+
+  void checkInternet() async {
+    hasInternet = await InternetConnectionChecker().hasConnection;
+  }
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    checkInternet();
+
     isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
 
     if (!isEmailVerified) {
@@ -80,7 +91,8 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                       Icons.arrow_back_ios_new,
                       color: Color(0xff4B4453),
                     ),
-                    onPressed: () {
+                    onPressed: () async{
+                     await FirebaseAuth.instance.signOut();
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => WelcomeScreen()));
                     },
@@ -88,9 +100,46 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 },
               ),
               // automaticallyImplyLeading: false,
+      centerTitle: true,
               backgroundColor: Colors.white,
-              title: BrandName(),
+              
+              title: BrandNameVerifyPage(),
               elevation: 0,
+              actions: [
+        PopupMenuButton<int>(
+              icon: Lottie.asset("assets/animated/menu.json"),
+              itemBuilder: (context) {
+                return [
+                  
+                  PopupMenuItem(
+                    onTap: hasInternet
+                        ? () async {
+                            await Phoenix.rebirth(context);
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => WelcomeScreen()));
+                            FirebaseAuth.instance.signOut();
+                          }
+                        : () {},
+                    child: Row(
+                      children: [
+                        Lottie.asset("assets/animated/log-out.json",
+                            height: 70),
+
+                        // Icon(Icons.logout_outlined),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          "Sign out",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                    value: 0,
+                  ),
+                ];
+              })
+      ]
             ),
             body: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

@@ -83,7 +83,7 @@ class _SearchState extends State<Search> {
   Future refreshPage() async {
     setState(() {
       wallpapers = [];
-      page = Random().nextInt(100);
+      page = Random().nextInt(20);
     });
     await getSearchWallpapers(widget.searchQuery);
 

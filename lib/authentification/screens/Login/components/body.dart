@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:my_wallpapers/authentification/components/rounded_button.dart';
 import 'package:my_wallpapers/authentification/components/rounded_input_field.dart';

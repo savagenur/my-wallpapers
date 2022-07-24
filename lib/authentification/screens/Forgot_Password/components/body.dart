@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:lottie/lottie.dart';
 import 'package:my_wallpapers/authentification/components/rounded_button.dart';

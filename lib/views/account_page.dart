@@ -54,8 +54,7 @@ margin: EdgeInsets.all(30),
           
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InfoWidget(title: "Name", text: FirebaseAuth.instance.currentUser!.displayName.toString()),
-            SizedBox(height: 10,),
+            
             InfoWidget(title: "Uid", text: FirebaseAuth.instance.currentUser!.uid.toString()),
             SizedBox(height: 10,),
             InfoWidget(title: "Email", text: FirebaseAuth.instance.currentUser!.email.toString()),

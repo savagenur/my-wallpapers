@@ -135,8 +135,8 @@ class _CategoryState extends State<Category> {
                                     borderRadius: BorderRadius.circular(80)),
                               ),
                               onPressed: () {
-                                seeMore;
-                                setState(() {});
+                                 seeMore();
+
                               },
                               child: Lottie.asset(
                                   "assets/animated/see-more.json",
